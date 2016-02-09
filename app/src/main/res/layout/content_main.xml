@@ -57,9 +57,22 @@
         android:src="@drawable/wheel"
         android:id="@+id/imageView_ring"
         android:layout_above="@+id/textView4"
+        android:scaleType="matrix"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="42dp"
         android:background="#ffffff" />
+    <TextView
+        android:id="@+id/myImageViewText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@id/imageView_ring"
+        android:layout_alignTop="@id/imageView_ring"
+        android:layout_alignRight="@id/imageView_ring"
+        android:layout_alignBottom="@id/imageView_ring"
+        android:layout_margin="1dp"
+        android:gravity="center"
+        android:text="Hello"
+        android:textColor="#000000" />
 
 </RelativeLayout>
 
