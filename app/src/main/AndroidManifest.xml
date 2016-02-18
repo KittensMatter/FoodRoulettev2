@@ -21,8 +21,8 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ResultActivity"
-            android:label="@string/title_activity_result"
+            android:name=".addActivity"
+            android:label="@string/title_activity_add"
             android:theme="@style/AppTheme"></activity>
     </application>
 

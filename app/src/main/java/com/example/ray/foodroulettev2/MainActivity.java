@@ -140,10 +140,14 @@ public class MainActivity extends AppCompatActivity {
     private void rotateDialer(float degrees) {
         matrix.postRotate(degrees, dialerWidth / 2, dialerHeight / 2);
         TextView text = (TextView)findViewById(R.id.myImageViewText);
-        Random rand = new Random();
-        int n = rand.nextInt(36);
-        text.setText(Integer.toString(n));
+        int random = generateInteger();
+        text.setText(Integer.toString(random));
         dialer.setImageMatrix(matrix);
+    }
+    public int generateInteger() {
+        Random rand = new Random();
+        int randomInt = rand.nextInt(36);
+        return randomInt;
     }
 
     @Override
@@ -160,22 +164,22 @@ public class MainActivity extends AppCompatActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        switch(item.getItemId()){
+        switch(id){
             case R.id.action_add:
-                Log.i("ADDING", "ADD PRESSED");
+                Intent add = new Intent(getApplicationContext(), addActivity.class);
+                add.putExtra("sms_body", Integer.toString(R.id.myImageViewText));
+                startActivity(add);
                 return true;
             case R.id.action_home:
-                Log.i("HOMING", "Home pressed");
-                Intent home = new Intent(getApplicationContext(), MainActivity.class);
-                startActivity(home);
                 return true;
             case R.id.action_mail:
-                Log.i("MAILING", "mail Pressed");
+                TextView text = (TextView)findViewById(R.id.myImageViewText);
+                String value = (String)text.getText();
                 Intent smsIntent = new Intent(Intent.ACTION_VIEW);
-
                 smsIntent.setData(Uri.parse("smsto:"));
                 smsIntent.setType("vnd.android-dir/mms-sms");
-                smsIntent.putExtra("sms_body", "test");
+                smsIntent.putExtra("sms_body", value);
+                Log.i("Vlaue", value);
                 startActivity(smsIntent);
                 return true;
             default:
