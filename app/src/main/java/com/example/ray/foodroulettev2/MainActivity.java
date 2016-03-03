@@ -3,16 +3,19 @@ package com.example.ray.foodroulettev2;
 import android.content.ContentProviderResult;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.Menu;
@@ -24,6 +27,12 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
@@ -34,6 +43,12 @@ public class MainActivity extends AppCompatActivity {
     private static Matrix matrix;
     private ImageView dialer;
     private int dialerHeight, dialerWidth;
+    private GestureDetector detector;
+    private boolean[] quadrantTouched;
+    private boolean allowRotating;
+    private static final ObjectMapper objectMapper = new ObjectMapper();
+    private String location;
+    private String placeName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,7 +68,9 @@ public class MainActivity extends AppCompatActivity {
             matrix.reset();
         }
 
-
+        detector = new GestureDetector(this, new MyGestureDetector());
+        quadrantTouched = new boolean[] { false, false, false, false, false };
+        allowRotating = true;
         dialer = (ImageView) findViewById(R.id.imageView_ring);
         dialer.setOnTouchListener(new MyOnTouchListener());
         dialer.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
@@ -91,6 +108,10 @@ public class MainActivity extends AppCompatActivity {
             switch (event.getAction()) {
 
                 case MotionEvent.ACTION_DOWN:
+                    for (int i = 0; i < quadrantTouched.length; i++) {
+                        quadrantTouched[i] = false;
+                    }
+                    allowRotating = false;
                     startAngle = getAngle(event.getX(), event.getY());
                     break;
 
@@ -101,14 +122,67 @@ public class MainActivity extends AppCompatActivity {
                     break;
 
                 case MotionEvent.ACTION_UP:
-
+                    allowRotating = true;
                     break;
+            }
+            detector.onTouchEvent(event);
+            return true;
+        }
+    }
+    /**
+     * Simple implementation of a {@link GestureDetector.SimpleOnGestureListener} for detecting a fling event.
+     */
+    private class MyGestureDetector extends GestureDetector.SimpleOnGestureListener {
+        @Override
+        public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+
+            // get the quadrant of the start and the end of the fling
+            int q1 = getQuadrant(e1.getX() - (dialerWidth / 2), dialerHeight - e1.getY() - (dialerHeight / 2));
+            int q2 = getQuadrant(e2.getX() - (dialerWidth / 2), dialerHeight - e2.getY() - (dialerHeight / 2));
+
+            // the inversed rotations
+            if ((q1 == 2 && q2 == 2 && Math.abs(velocityX) < Math.abs(velocityY))
+                    || (q1 == 3 && q2 == 3)
+                    || (q1 == 1 && q2 == 3)
+                    || (q1 == 4 && q2 == 4 && Math.abs(velocityX) > Math.abs(velocityY))
+                    || ((q1 == 2 && q2 == 3) || (q1 == 3 && q2 == 2))
+                    || ((q1 == 3 && q2 == 4) || (q1 == 4 && q2 == 3))
+                    || (q1 == 2 && q2 == 4 && quadrantTouched[3])
+                    || (q1 == 4 && q2 == 2 && quadrantTouched[3])) {
+
+                dialer.post(new FlingRunnable(-1 * (velocityX + velocityY)));
+            } else {
+                // the normal rotation
+                dialer.post(new FlingRunnable(velocityX + velocityY));
             }
 
             return true;
         }
-
     }
+
+    /**
+     * A {@link Runnable} for animating the the dialer's fling.
+     */
+    private class FlingRunnable implements Runnable {
+
+        private float velocity;
+
+        public FlingRunnable(float velocity) {
+            this.velocity = velocity;
+        }
+
+        @Override
+        public void run() {
+            if (Math.abs(velocity) > 5 && allowRotating) {
+                rotateDialer(velocity / 75);
+                velocity /= 1.0666F;
+
+                // post this instance again
+                dialer.post(this);
+            }
+        }
+    }
+
     private double getAngle(double xTouch, double yTouch) {
         double x = xTouch - (dialerWidth / 2d);
         double y = dialerHeight - yTouch - (dialerHeight / 2d);
@@ -140,16 +214,59 @@ public class MainActivity extends AppCompatActivity {
     private void rotateDialer(float degrees) {
         matrix.postRotate(degrees, dialerWidth / 2, dialerHeight / 2);
         TextView text = (TextView)findViewById(R.id.myImageViewText);
-        int random = generateInteger();
-        text.setText(Integer.toString(random));
+        List<Place> placeList = new ArrayList<Place>();
+        SharedPreferences sharedPreferences = getSharedPreferences("place-sp", MODE_PRIVATE);
+        String placeListStr = sharedPreferences.getString("place-list", null);
+        placeList = readPlacesListFromDb();
+
+        if (placeListStr == null) {
+            text.setText("Add some places first!");
+        }
+        else if(placeList.size() <= 0)
+        {
+           text.setText("Add some places first!");
+        }
+        else
+        {
+            int index = generateIndex();
+            final Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                }
+            }, 20);
+            text.setText(placeList.get(index).getPlace());
+            location = placeList.get(index).getAddress();
+            placeName = placeList.get(index).getPlace();
+        }
         dialer.setImageMatrix(matrix);
     }
-    public int generateInteger() {
+    public int generateIndex() {
         Random rand = new Random();
-        int randomInt = rand.nextInt(36);
+        int randomInt = 1;
+        if(readPlacesListFromDb().size() > 0)
+        {
+            randomInt = rand.nextInt(readPlacesListFromDb().size());
+        }
         return randomInt;
     }
+    public List<Place> readPlacesListFromDb() {
+        List<Place> placeList = new ArrayList<Place>();
 
+        SharedPreferences sharedPreferences = getSharedPreferences("place-sp", MODE_PRIVATE);
+
+        String placeListStr = sharedPreferences.getString("place-list", null);
+        if (placeListStr != null) {
+            try {
+                placeList = objectMapper.readValue(placeListStr,
+                        new TypeReference<List<Place>>() {
+                        });
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return placeList;
+    }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -174,12 +291,11 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             case R.id.action_mail:
                 TextView text = (TextView)findViewById(R.id.myImageViewText);
-                String value = (String)text.getText();
+                String result = placeName + " @ " + location;
                 Intent smsIntent = new Intent(Intent.ACTION_VIEW);
                 smsIntent.setData(Uri.parse("smsto:"));
                 smsIntent.setType("vnd.android-dir/mms-sms");
-                smsIntent.putExtra("sms_body", value);
-                Log.i("Vlaue", value);
+                smsIntent.putExtra("sms_body", result);
                 startActivity(smsIntent);
                 return true;
             default:
