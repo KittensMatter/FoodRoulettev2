@@ -1,4 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
+<<<<<<< HEAD
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    tools:context="com.CPP.ray.foodroulettev2.addActivity">
+=======
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -6,7 +15,12 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:fitsSystemWindows="true"
+<<<<<<< HEAD:app/src/main/res/layout/Places.xml
     tools:context=".Places">
+=======
+    tools:context="com.example.ray.foodroulettev2.addActivity">
+>>>>>>> cd62fd34603c99db2aa00813ef10165f92b5a925
+>>>>>>> a8eeb4536b21b1fa6793cc687620c42e6b56c1b0:app/src/main/res/layout/activity_add.xml
 
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
@@ -21,6 +35,20 @@
             app:popupTheme="@style/AppTheme.PopupOverlay" />
 
     </android.support.design.widget.AppBarLayout>
+<<<<<<< HEAD
+
+    <include layout="@layout/content_add" />
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="@dimen/fab_margin"
+        android:src="@android:drawable/ic_dialog_email" />
+
+</android.support.design.widget.CoordinatorLayout>
+=======
     <EditText
         android:id="@+id/placeEditText"
         android:hint="Name of place you want to go."
@@ -51,3 +79,4 @@
         android:layout_height="wrap_content"></ListView>
 
 </LinearLayout>
+>>>>>>> cd62fd34603c99db2aa00813ef10165f92b5a925
