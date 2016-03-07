@@ -21,7 +21,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".addActivity"
+            android:name=".Places"
             android:label="@string/title_activity_add"
             android:theme="@style/AppTheme"></activity>
     </application>

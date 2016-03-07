@@ -1,9 +1,9 @@
 <resources>
-    <string name="app_name">foodroulettev2</string>
+    <string name="app_name">FoodRoulette</string>
     <string name="action_settings"></string>
     <string name="action_add">Add</string>
     <string name="action_mail">Mail</string>
     <string name="action_home">Home</string>
     <string name="title_activity_result">ResultActivity</string>
-    <string name="title_activity_add">addActivity</string>
+    <string name="title_activity_add">Places</string>
 </resources>

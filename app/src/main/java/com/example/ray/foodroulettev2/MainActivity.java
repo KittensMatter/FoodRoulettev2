@@ -1,7 +1,5 @@
 package com.example.ray.foodroulettev2;
 
-import android.content.ContentProviderResult;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -10,11 +8,8 @@ import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -22,7 +17,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewTreeObserver;
 import android.view.animation.Animation;
-import android.view.animation.RotateAnimation;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -283,7 +277,7 @@ public class MainActivity extends AppCompatActivity {
 
         switch(id){
             case R.id.action_add:
-                Intent add = new Intent(getApplicationContext(), addActivity.class);
+                Intent add = new Intent(getApplicationContext(), Places.class);
                 add.putExtra("sms_body", Integer.toString(R.id.myImageViewText));
                 startActivity(add);
                 return true;
