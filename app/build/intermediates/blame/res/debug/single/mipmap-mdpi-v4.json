@@ -1,0 +1,10 @@
+[
+    {
+        "merged": "/Users/raylee/FoodRoulettev2/app/build/intermediates/res/merged/debug/mipmap-mdpi-v4/ic_launcherorig.png",
+        "source": "/Users/raylee/FoodRoulettev2/app/src/main/res/mipmap-mdpi/ic_launcherorig.png"
+    },
+    {
+        "merged": "/Users/raylee/FoodRoulettev2/app/build/intermediates/res/merged/debug/mipmap-mdpi-v4/ic_launcher.png",
+        "source": "/Users/raylee/FoodRoulettev2/app/src/main/res/mipmap-mdpi/ic_launcher.png"
+    }
+]
