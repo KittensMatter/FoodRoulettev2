@@ -1,15 +1,22 @@
 package com.example.ray.foodroulettev2;
 
+import android.app.ActivityManager;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -17,6 +24,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewTreeObserver;
 import android.view.animation.Animation;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -31,8 +39,6 @@ import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
 
-    private Animation rotation;
-    private ImageButton imgbutton;
     private static Bitmap imageOriginal, imageScaled;
     private static Matrix matrix;
     private ImageView dialer;
@@ -48,6 +54,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        startService(new Intent(this, BackgroundSoundService.class)); //OR stopService(svc);
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         if (imageOriginal == null) {
@@ -228,7 +237,7 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void run() {
                 }
-            }, 20);
+            }, 50);
             text.setText(placeList.get(index).getPlace());
             location = placeList.get(index).getAddress();
             placeName = placeList.get(index).getPlace();
@@ -268,6 +277,44 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+    public boolean canSendSMS (Context context)
+    {
+        PackageManager pm = context.getPackageManager();
+        return (pm.hasSystemFeature(PackageManager.FEATURE_TELEPHONY) || pm.hasSystemFeature(PackageManager.FEATURE_TELEPHONY_CDMA));
+    }
+    private void alertView(String message) {
+        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+
+        dialog.setTitle("Uhoh!")
+                .setMessage(message)
+                .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialoginterface, int i) {
+                    }
+                }).show();
+    }
+    private boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                Log.i("lOL", "LOL");
+                return true;
+            }
+        }
+        return false;
+    }
+
+    protected void onPause() {
+        super.onPause();
+        Intent serviceIntent = new Intent(this, BackgroundSoundService.class);
+        stopService(serviceIntent);
+    }
+
+    protected void onResume() {
+        super.onResume();
+        Intent serviceIntent = new Intent(this, BackgroundSoundService.class);
+        startService(serviceIntent);
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -284,14 +331,20 @@ public class MainActivity extends AppCompatActivity {
             case R.id.action_home:
                 return true;
             case R.id.action_mail:
-                TextView text = (TextView)findViewById(R.id.myImageViewText);
-                String result = placeName + " @ " + location;
-                Intent smsIntent = new Intent(Intent.ACTION_VIEW);
-                smsIntent.setData(Uri.parse("smsto:"));
-                smsIntent.setType("vnd.android-dir/mms-sms");
-                smsIntent.putExtra("sms_body", result);
-                startActivity(smsIntent);
-                return true;
+                if(canSendSMS(this)) {
+                    TextView text = (TextView) findViewById(R.id.myImageViewText);
+                    String result = placeName + " @ " + location;
+                    Intent smsIntent = new Intent(Intent.ACTION_VIEW);
+                    smsIntent.setData(Uri.parse("smsto:"));
+                    smsIntent.setType("vnd.android-dir/mms-sms");
+                    smsIntent.putExtra("sms_body", result);
+                    startActivity(smsIntent);
+                    return true;
+                }
+                else
+                {
+                    alertView("SMS capability not supported!");
+                }
             default:
                 return super.onOptionsItemSelected(item);
         }

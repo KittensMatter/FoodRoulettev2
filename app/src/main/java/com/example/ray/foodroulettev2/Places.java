@@ -42,10 +42,22 @@ public class Places extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.places);
+        startService(new Intent(this, BackgroundAddService.class)); //OR stopService(svc);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         ButterKnife.bind(this);
         refreshListView();
+    }
+    protected void onPause() {
+        super.onPause();
+        Intent serviceIntent = new Intent(this, BackgroundAddService.class);
+        stopService(serviceIntent);
+    }
+
+    protected void onResume() {
+        super.onResume();
+        Intent serviceIntent = new Intent(this, BackgroundAddService.class);
+        startService(serviceIntent);
     }
 
     @Override
@@ -92,6 +104,8 @@ public class Places extends AppCompatActivity {
             places.setPlace(place);
             places.setAddress(address);
             placeList.add(places);
+            placeEditText.setText("");
+            addressEditText.setText("");
         }
 
         SharedPreferences sharedPreferences = this.getSharedPreferences("place-sp", MODE_PRIVATE);
@@ -103,8 +117,6 @@ public class Places extends AppCompatActivity {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        Log.i("TEST", "Inserted the Place record!");
         refreshListView();
     }
 
@@ -118,8 +130,6 @@ public class Places extends AppCompatActivity {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.clear();
         editor.commit();
-
-        Log.i("TEST", "Deleted the Place record!");
         refreshListView();
     }
 
