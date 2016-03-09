@@ -27,7 +27,7 @@ public class BackgroundAddService extends Service {
     }
     public int onStartCommand(Intent intent, int flags, int startId) {
         player.start();
-        Log.v("FSDF", "Initializing sounds...");
+
         return 1;
     }
 

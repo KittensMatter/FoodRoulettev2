@@ -80,15 +80,48 @@ public class Places extends AppCompatActivity {
 
                 Intent smsIntent = new Intent(Intent.ACTION_VIEW);
                 Intent getMe = getIntent();
-                String number = getMe.getStringExtra("sms_body");
-                smsIntent.setData(Uri.parse("smsto:"));
-                smsIntent.setType("vnd.android-dir/mms-sms");
-                smsIntent.putExtra("sms_body", Integer.parseInt(number));
-                startActivity(smsIntent);
+                String chosen = readChosenPlace().getPlace();
+                String location = readChosenPlace().getAddress();
+                String resultWithoutLoc = chosen;
+                String resultWithLoc = chosen + " @ " + location;
+                if(location == "")
+                {
+                    smsIntent = new Intent(Intent.ACTION_VIEW);
+                    smsIntent.setData(Uri.parse("smsto:"));
+                    smsIntent.setType("vnd.android-dir/mms-sms");
+                    smsIntent.putExtra("sms_body", resultWithoutLoc);
+                    startActivity(smsIntent);
+                }
+                else if(location != null && location != null)
+                {
+                    smsIntent = new Intent(Intent.ACTION_VIEW);
+                    smsIntent.setData(Uri.parse("smsto:"));
+                    smsIntent.setType("vnd.android-dir/mms-sms");
+                    smsIntent.putExtra("sms_body", resultWithLoc);
+                    startActivity(smsIntent);
+                }
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+    public Place readChosenPlace() {
+        Place place = new Place();
+
+        SharedPreferences sharedPreferences = getSharedPreferences("chosenPlace-sp", MODE_PRIVATE);
+
+        String chosenPlace = sharedPreferences.getString("chosenPlace", null);
+        if (chosenPlace != null) {
+            try {
+                place = objectMapper.readValue(chosenPlace,
+                        new TypeReference<Place>() {
+                        });
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        Log.d("Reading chosen place", place.toString());
+        return place;
     }
 
     @OnClick(R.id.addButton)

@@ -241,6 +241,19 @@ public class MainActivity extends AppCompatActivity {
             text.setText(placeList.get(index).getPlace());
             location = placeList.get(index).getAddress();
             placeName = placeList.get(index).getPlace();
+            SharedPreferences chosenPlace = getSharedPreferences("chosenPlace-sp", MODE_PRIVATE);
+            SharedPreferences.Editor editor = chosenPlace.edit();
+            try {
+                Place place = new Place();
+                place.setAddress(location);
+                place.setPlace(placeName);
+                editor.putString("chosenPlace", place.toString());
+                editor.commit();
+                Log.d("FAFA", place.toString());
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
         dialer.setImageMatrix(matrix);
     }
@@ -333,12 +346,28 @@ public class MainActivity extends AppCompatActivity {
             case R.id.action_mail:
                 if(canSendSMS(this)) {
                     TextView text = (TextView) findViewById(R.id.myImageViewText);
-                    String result = placeName + " @ " + location;
-                    Intent smsIntent = new Intent(Intent.ACTION_VIEW);
-                    smsIntent.setData(Uri.parse("smsto:"));
-                    smsIntent.setType("vnd.android-dir/mms-sms");
-                    smsIntent.putExtra("sms_body", result);
-                    startActivity(smsIntent);
+                    String resultWithLoc = placeName + " @ " + location;
+                    String resultWithoutLoc = placeName;
+                    if(location == "")
+                    {
+                        Intent smsIntent = new Intent(Intent.ACTION_VIEW);
+                        smsIntent.setData(Uri.parse("smsto:"));
+                        smsIntent.setType("vnd.android-dir/mms-sms");
+                        smsIntent.putExtra("sms_body", resultWithoutLoc);
+                        startActivity(smsIntent);
+                    }
+                    else if(location != null && placeName != null)
+                    {
+                        Intent smsIntent = new Intent(Intent.ACTION_VIEW);
+                        smsIntent.setData(Uri.parse("smsto:"));
+                        smsIntent.setType("vnd.android-dir/mms-sms");
+                        smsIntent.putExtra("sms_body", resultWithLoc);
+                        startActivity(smsIntent);
+                    }
+                    else
+                    {
+                        alertView("No places have been entered yet! People don't like blank texts!");
+                    }
                     return true;
                 }
                 else
